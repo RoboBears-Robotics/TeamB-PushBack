@@ -1,6 +1,6 @@
 #region VEXcode Generated Robot Configuration
 from vex import *
-import urandom
+import urandom # type: ignore
 import math
 
 # Brain should be defined by default
@@ -8,18 +8,18 @@ brain=Brain()
 
 # Robot configuration code
 controller_1 = Controller(PRIMARY)
-left_motor_a = Motor(Ports.PORT10, GearSetting.RATIO_18_1, False)
-left_motor_b = Motor(Ports.PORT1, GearSetting.RATIO_18_1, False)
+left_motor_a = Motor(Ports.PORT3, GearSetting.RATIO_18_1, False)
+left_motor_b = Motor(Ports.PORT18, GearSetting.RATIO_18_1, False)
 left_drive_smart = MotorGroup(left_motor_a, left_motor_b)
-right_motor_a = Motor(Ports.PORT20, GearSetting.RATIO_18_1, True)
-right_motor_b = Motor(Ports.PORT11, GearSetting.RATIO_18_1, True)
+right_motor_a = Motor(Ports.PORT8, GearSetting.RATIO_18_1, True)
+right_motor_b = Motor(Ports.PORT13, GearSetting.RATIO_18_1, True)
 right_drive_smart = MotorGroup(right_motor_a, right_motor_b)
-drivetrain_inertial = Inertial(Ports.PORT6)
+drivetrain_inertial = Inertial(Ports.PORT5 )
 drivetrain = SmartDrive(left_drive_smart, right_drive_smart, drivetrain_inertial, 219.44, 320, 40, MM, 1)
-FrontLandM = Motor(Ports.PORT3, GearSetting.RATIO_18_1, True)
-TopMotors = Motor(Ports.PORT13, GearSetting.RATIO_18_1, True)
-BackMiddle = Motor(Ports.PORT16, GearSetting.RATIO_18_1, False)
-BackLower = Motor(Ports.PORT18, GearSetting.RATIO_18_1, False)
+FrontLandM = Motor(Ports.PORT11, GearSetting.RATIO_18_1, True)
+TopMotors = Motor(Ports.PORT1, GearSetting.RATIO_18_1, True)
+BackMiddle = Motor(Ports.PORT10, GearSetting.RATIO_18_1, False)
+BackLower = Motor(Ports.PORT20, GearSetting.RATIO_18_1, False)
 
 
 # wait for rotation sensor to fully initialize
