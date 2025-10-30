@@ -23,7 +23,7 @@ BackLower = Motor(Ports.PORT20, GearSetting.RATIO_18_1, False)
 
 
 # wait for rotation sensor to fully initialize
-wait(30, MSEC)
+wait(30, MSEC) 
 
 
 # Make random actually random
