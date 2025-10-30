@@ -41,6 +41,63 @@ print("\033[2J")
 
 #endregion VEXcode Generated Robot Configuration
 
+# Motor Function Definitions
+
+def FrontLMForward():
+    if FrontLandM.is_spinning():
+        FrontLandM.stop()
+    else:
+        FrontLandM.spin(FORWARD)
+
+def FrontLMReverse():
+    if FrontLandM.is_spinning():
+        FrontLandM.stop()
+    else:
+        FrontLandM.spin(REVERSE)
+
+def TopMotorForward():
+    if TopMotors.is_spinning():
+        TopMotors.stop()
+    else:
+        TopMotors.spin(FORWARD)
+
+def TopMotorReverse():
+    if TopMotors.is_spinning():
+        TopMotors.stop()
+    else:
+        TopMotors.spin(REVERSE)
+
+def BackMiddleForward():
+    if BackMiddle.is_spinning():
+        BackMiddle.stop()
+    else:
+        BackMiddle.spin(FORWARD)
+
+def BackMiddleReverse():
+    if BackMiddle.is_spinning():
+        BackMiddle.stop()
+    else:
+        BackMiddle.spin(REVERSE)
+
+def BackLowerForward():
+    if BackLower.is_spinning():
+        BackLower.stop()
+    else:
+        BackLower.spin(FORWARD)
+
+def BackLowerReverse():
+    if BackLower.is_spinning():
+        BackLower.stop()
+    else:
+        BackLower.spin(REVERSE)
+
+TopMotors.set_velocity(100, PERCENT)
+FrontLandM.set_velocity(100, PERCENT)
+BackMiddle.set_velocity(100, PERCENT)
+BackLower.set_velocity(100, PERCENT)
+
+# Color Sorting Functions
+
 ai_vision_1_objects = []
 screen_precision = 0
 console_precision = 0
