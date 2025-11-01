@@ -20,7 +20,7 @@ FrontLandM = Motor(Ports.PORT11, GearSetting.RATIO_18_1, True)
 TopMotors = Motor(Ports.PORT1, GearSetting.RATIO_18_1, True)
 BackMiddle = Motor(Ports.PORT10, GearSetting.RATIO_18_1, False)
 BackLower = Motor(Ports.PORT20, GearSetting.RATIO_18_1, False)
-
+BumperFront = DigitalOut(brain.three_wire_port.a)
 
 # wait for rotation sensor to fully initialize
 wait(30, MSEC) 
@@ -136,6 +136,179 @@ rc_auto_loop_thread_controller_1 = Thread(rc_auto_loop_function_controller_1)
 #endregion VEXcode Generated Robot Configuration
 
 # Begin project code
+ai_vision_1_objects = []
+screen_precision = 0
+console_precision = 0
+myVariable = 0
+
+buttonXActive = False
+buttonBActive = False
+buttonUpActive = False
+buttonLRActive = False
+buttonDownActive = False
+
+drivetrain.set_drive_velocity(100, PERCENT)
+
+def buttonBFunct():
+    BackMiddle.stop()
+    TopMotors.stop()
+    FrontLandM.stop()
+    BackLower.stop()
+    buttonXActive = False
+    buttonUpActive = False
+    buttonLRActive = False
+    buttonDownActive = False
+    global buttonBActive
+    if not buttonBActive:
+        FrontLandM.spin(FORWARD)
+        BackLower.spin(REVERSE)
+        buttonBActive = True
+    else:
+        FrontLandM.stop()
+        TopMotors.stop()
+        BackLower.stop()
+        buttonBActive = False
+
+def buttonXFunct():
+    BackMiddle.stop()
+    TopMotors.stop()
+    FrontLandM.stop()
+    BackLower.stop()
+    buttonBActive = False
+    buttonUpActive = False
+    buttonLRActive = False
+    buttonDownActive = False
+    global buttonXActive
+    if not buttonXActive:
+        FrontLandM.spin(FORWARD)
+        BackLower.spin(FORWARD)
+        BackMiddle.spin(REVERSE)
+        buttonXActive = True
+    else:
+        FrontLandM.stop()
+        BackLower.stop()
+        BackMiddle.stop()
+        buttonXActive = False
+
+def buttonUpFunct():
+    BackMiddle.stop()
+    TopMotors.stop()
+    FrontLandM.stop()
+    BackLower.stop()
+    buttonBActive = False
+    buttonXActive = False
+    buttonLRActive = False
+    buttonDownActive = False
+    global buttonUpActive
+    if not buttonUpActive:
+        FrontLandM.spin(FORWARD)
+        BackLower.spin(REVERSE)
+        TopMotors.spin(FORWARD)
+        BackMiddle.spin(FORWARD)
+        buttonUpActive = True
+    else:
+        FrontLandM.stop()
+        BackLower.stop()
+        TopMotors.stop()
+        BackMiddle.stop()
+        buttonUpActive = False
+
+def buttonLRFunct():
+    BackMiddle.stop()
+    TopMotors.stop()
+    FrontLandM.stop()
+    BackLower.stop()
+    buttonBActive = False
+    buttonXActive = False
+    buttonUpActive = False
+    buttonDownActive = False
+    global buttonLRActive
+    if not buttonLRActive:
+        FrontLandM.spin(FORWARD)
+        BackLower.spin(REVERSE)
+        BackMiddle.spin(FORWARD)
+        TopMotors.spin(REVERSE)
+        buttonLRActive = True
+    else:
+        FrontLandM.stop()
+        BackLower.stop()
+        BackMiddle.stop()
+        TopMotors.stop()
+        buttonLRActive = False
+
+def buttonDownFunct():
+    BackMiddle.stop()
+    TopMotors.stop()
+    FrontLandM.stop()
+    BackLower.stop()
+    buttonBActive = False
+    buttonXActive = False
+    buttonUpActive = False
+    buttonLRActive = False
+    global buttonDownActive
+    if not buttonDownActive:
+        FrontLandM.spin(REVERSE)
+        BackMiddle.spin(FORWARD)
+        BackLower.spin(REVERSE)
+        buttonDownActive = True
+    else:
+        FrontLandM.stop()
+        BackMiddle.stop()
+        BackLower.stop()
+        buttonDownActive = False
+
+def stopall():
+    FrontLandM.stop()
+    TopMotors.stop()
+    BackMiddle.stop()
+    BackLower.stop()
+    global buttonBActive, buttonXActive, buttonUpActive, buttonLRActive, buttonDownActive
+    buttonBActive = False
+    buttonXActive = False
+    buttonUpActive = False
+    buttonLRActive = False
+    buttonDownActive = False
+
+def bumperFunct():
+    if BumperFront.value() == 1:
+        BumperFront.set(False)
+    else:
+        BumperFront.set(True)
+
+controller_1.buttonR2.pressed(bumperFunct)
+controller_1.buttonL2.pressed(stopall)
+controller_1.buttonL1.pressed(stopall)
+controller_1.buttonR1.pressed(bumperFunct)
+controller_1.buttonX.pressed(buttonXFunct)
+controller_1.buttonB.pressed(buttonBFunct)
+controller_1.buttonUp.pressed(buttonUpFunct)
+controller_1.buttonLeft.pressed(buttonLRFunct)
+controller_1.buttonRight.pressed(buttonLRFunct)
+controller_1.buttonDown.pressed(buttonDownFunct)
+
+# def checkBlue():
+#     global myVariable, ai_vision_1_objects, screen_precision, console_precision
+#     brain.screen.set_font(FontType.MONO40)
+#     brain.screen.clear_row(1)
+#     brain.screen.set_cursor(brain.screen.row(), 1)
+#     brain.screen.set_cursor(1, 1)
+#     ai_vision_1_objects = ai_vision_21.take_snapshot(ai_vision_21__BlueBlock)
+#     if ai_vision_1_objects and len(ai_vision_1_objects) > 0:
+#         brain.screen.print("Blue Object Found")
+#     else:
+#         brain.screen.print("No Blue Object")
+
+# def checkRed():
+#     global myVariable, ai_vision_1_objects, screen_precision, console_precision
+#     brain.screen.set_font(FontType.MONO40)
+#     brain.screen.clear_row(3)
+#     brain.screen.set_cursor(brain.screen.row(), 1)
+#     brain.screen.set_cursor(3, 1)
+#     ai_vision_1_objects = ai_vision_21.take_snapshot(ai_vision_21__RedBlock)
+#     if ai_vision_1_objects and len(ai_vision_1_objects) > 0:
+#         brain.screen.print("Red Object Found")
+#     else:
+#         brain.screen.print("No Red Object")
 
 def pre_autonomous():
     # actions to do when the program starts
@@ -149,6 +322,12 @@ def autonomous():
     # place automonous code here
 
 def user_control():
+    # global myVariable, ai_vision_1_objects, screen_precision, console_precision
+    # while True:
+        # checkBlue()
+        # checkRed()
+        # wait(0.1, SECONDS)
+        # wait(20, MSEC)
     brain.screen.clear_screen()
     # place driver control in this while loop
     while True:
@@ -209,14 +388,14 @@ BackMiddle.set_velocity(100, PERCENT)
 BackLower.set_velocity(100, PERCENT)
 
 
-controller_1.buttonA.pressed(FrontLMForward)
-controller_1.buttonB.pressed(FrontLMReverse)
-controller_1.buttonX.pressed(TopMotorForward)
-controller_1.buttonY.pressed(TopMotorReverse)
-controller_1.buttonR1.pressed(BackMiddleForward)
-controller_1.buttonR2.pressed(BackMiddleReverse)
-controller_1.buttonL1.pressed(BackLowerForward)
-controller_1.buttonL2.pressed(BackLowerReverse)
+# controller_1.buttonA.pressed(FrontLMForward)
+# controller_1.buttonB.pressed(FrontLMReverse)
+# controller_1.buttonX.pressed(TopMotorForward)
+# controller_1.buttonY.pressed(TopMotorReverse)
+# controller_1.buttonR1.pressed(BackMiddleForward)
+# controller_1.buttonR2.pressed(BackMiddleReverse)
+# controller_1.buttonL1.pressed(BackLowerForward)
+# controller_1.buttonL2.pressed(BackLowerReverse)
 
 # create competition instance
 comp = Competition(user_control, autonomous)
