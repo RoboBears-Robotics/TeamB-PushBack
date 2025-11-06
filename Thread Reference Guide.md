@@ -1,0 +1,142 @@
+# VEXcode Python Thread Reference Guide
+
+## 1. Creating and Starting a Thread
+
+```python
+from vex import *
+
+# Define a function to run in the thread
+def my_function():
+    while True:
+        # your code here
+        wait(0.1, SECONDS)
+
+# Create (and start) the thread
+my_thread = Thread(my_function)
+```
+
+**Notes:**
+- `Thread()` automatically starts the function in parallel.
+- Each thread runs independently of the main program.
+
+## 2. Stopping a Thread (Proper Way)
+
+**Threads cannot be force-stopped directly** — you must use a shared flag variable that both functions check.
+
+```python
+stop_thread = False # global flag
+
+def my_function():
+    global stop_thread
+    while not stop_thread:
+        brain.screen.print("Running...")
+        brain.screen.new_line()
+        wait(0.5, SECONDS)
+    brain.screen.print("Stopped")
+
+def main():
+    global stop_thread
+    t = Thread(my_function)
+    wait(3, SECONDS)    # simulate condition
+    stop_thread = True  # signal thread to stop
+    t.join()            # wait for thread to finish
+
+main()
+```
+
+**Best practice:** Use `.join()` to ensure the thread finishes cleanly before continuing or ending the program.
+
+## 3. Checking Conditions in the Thread
+
+Threads often perform tasks like sensor monitoring, motor control, or repeated checks. Use "while not stop_flag:" loops to keep them responsive.
+
+Example with a bumper sensor:
+
+```python
+bumper = Bumper(Brain.three_wire_port.a)
+stop_thread = False
+
+def monitor_bumper():
+    global stop_thread
+    while not stop_thread:
+        if bumper.pressing():
+            brain.screen.print("Bumper pressed!")
+            brain.screen.new_line()
+        wait(0.1, SECONDS)
+
+t = Thread(monitor_bumper)
+
+# Main program logic
+wait(5, SECONDS)
+stop_thread = True
+t.join()
+```
+
+## 4. Multiple Threads
+
+You can run multiple threads at once — just keep code efficient to avoid
+overloading the brain’s processor.
+
+```python
+t1 = Thread(func1)
+t2 = Thread(func2)
+t3 = Thread(func3)
+```
+
+**Tips:**
+- Each thread should include small wait() calls to yield CPU time.
+- Avoid multiple threads writing to the screen at the same time — use one display thread if possible.
+
+## 5. Thread Methods and Behavior
+
+| Method / Concept | Description |
+| ------------ | ------------ |
+| Thread(function) | Creates and starts a new thread immediately |
+| .join() | Waits for the thread to finish |
+| global var | Use global variables to share state between threads |
+| wait(time, SECONDS) | Pauses a thread, allowing others to run
+| Brain.screen.* | Safe for simple prints, but avoid heavy screen updates from multiple threads
+
+## 6. Common Pitfalls
+
+Don’t:
+- Try to "kill" a thread directly — not supported in VEXcode.
+- Run infinite loops without a wait() — this will freeze the brain.
+- Modify shared variables from multiple threads without care.
+
+Do:
+- Use shared flags (e.g. stop_flag) for coordination.
+- Keep loops efficient and responsive.
+- Use .join() for clean shutdowns.
+
+## 7. Thread Control Template
+
+```python
+from vex import *
+
+brain = Brain()
+stop_worker = False
+
+def worker():
+    global stop_worker
+    while not stop_worker:
+        brain.screen.print("Working...")
+        brain.screen.new_line()
+        wait(0.5, SECONDS)
+    brain.screen.print("Worker stopped.")
+    brain.screen.new_line()
+
+def main():
+    global stop_worker
+    t = Thread(worker)
+
+    # Simulate a condition or sensor event
+    wait(3, SECONDS)
+    stop_worker = True
+    t.join()
+
+    brain.screen.print("Main done.")
+    brain.screen.new_line()
+
+main()
+```
