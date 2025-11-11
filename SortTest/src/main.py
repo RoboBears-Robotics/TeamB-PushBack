@@ -21,11 +21,6 @@ TopMotors = Motor(Ports.PORT1, GearSetting.RATIO_18_1, True)
 BackMiddle = Motor(Ports.PORT10, GearSetting.RATIO_18_1, False)
 BackLower = Motor(Ports.PORT20, GearSetting.RATIO_18_1, False)
 BumperFront = DigitalOut(brain.three_wire_port.a)
-# AI Vision Color Descriptions
-ai_vision_1__BlueBlock = Colordesc(1, 48, 83, 119, 15, 0.4)
-ai_vision_1__RedBlock = Colordesc(2, 135, 14, 62, 13, 0.33)
-# AI Vision Code Descriptions
-ai_vision_1 = AiVision(Ports.PORT1, ai_vision_1__BlueBlock, ai_vision_1__RedBlock)
 
 # wait for rotation sensor to fully initialize
 wait(30, MSEC) 
@@ -142,9 +137,9 @@ rc_auto_loop_thread_controller_1 = Thread(rc_auto_loop_function_controller_1)
 
 # Begin project code
 ai_vision_1_objects = []
-ai_vision_1_index = 0
 screen_precision = 0
 console_precision = 0
+myVariable = 0
 
 buttonXActive = False
 buttonBActive = False
@@ -280,34 +275,9 @@ def bumperFunct():
     else:
         BumperFront.set(True)
 
-def upOutput():
-    global ai_vision_1_objects, ai_vision_1_index, screen_precision, console_precision
-    while True:
-        ai_vision_1_objects = ai_vision_1.take_snapshot(ai_vision_1__RedBlock)
-        if ai_vision_1_objects[ai_vision_1_index].width >= 165:
-            if ai_vision_1_objects[ai_vision_1_index].centerX >= 10 or ai_vision_1_objects[ai_vision_1_index].centerX <= 10:
-                brain.screen.clear_row(1)
-                brain.screen.set_cursor(brain.screen.row(), 1)
-                brain.screen.set_cursor(1, 1)
-                brain.screen.print("Detected Red")
-        else:
-            brain.screen.clear_row(1)
-            brain.screen.set_cursor(brain.screen.row(), 1)
-        ai_vision_1_objects = ai_vision_1.take_snapshot(ai_vision_1__BlueBlock)
-        if ai_vision_1_objects[ai_vision_1_index].width >= 165:
-            if ai_vision_1_objects[ai_vision_1_index].centerX >= 10 or ai_vision_1_objects[ai_vision_1_index].centerX <= 10:
-                brain.screen.clear_row(2)
-                brain.screen.set_cursor(brain.screen.row(), 1)
-                brain.screen.set_cursor(2, 1)
-                brain.screen.print("Detected Blue")
-        else:
-            brain.screen.clear_row(2)                
-            brain.screen.set_cursor(brain.screen.row(), 1)
-        wait(5, MSEC)
-
 controller_1.buttonR2.pressed(bumperFunct)
 controller_1.buttonL2.pressed(stopall)
-controller_1.buttonL1.pressed(upOutput)
+controller_1.buttonL1.pressed(stopall)
 controller_1.buttonR1.pressed(bumperFunct)
 controller_1.buttonX.pressed(buttonXFunct)
 controller_1.buttonB.pressed(buttonBFunct)
