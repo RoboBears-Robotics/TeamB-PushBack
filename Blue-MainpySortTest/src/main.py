@@ -555,10 +555,10 @@ def pre_autonomous():
     wait(1, SECONDS)
 
 def autonomous():
-    global ai_vision_1_objects, screen_precision, console_precision
+    global ai_vision_1_objects, screen_precision, console_precision, upOutputAutonActive
     brain.screen.clear_screen()
     brain.screen.print("autonomous code")
-    drivetrain.set_drive_velocity(10, PERCENT)
+    drivetrain.set_drive_velocity(18, PERCENT)
     drivetrain.set_stopping(BRAKE)
 
     # ---------- INITIAL MOVEMENT ----------
@@ -569,20 +569,55 @@ def autonomous():
     drivetrain.drive_for(FORWARD, 800, MM)
 
     # drivetrain.turn_to_heading(130, DEGREES)
-    drivetrain.turn_for(RIGHT, 145, DEGREES)
+    drivetrain.turn_for(RIGHT, 130, DEGREES)
     drivetrain.drive_for(FORWARD, 850, MM)
 
     # drivetrain.turn_to_heading(170, DEGREES)
-    drivetrain.turn_for(LEFT, 150, DEGREES)
-    drivetrain.drive_for(FORWARD, 375, MM)
+    drivetrain.turn_for(LEFT, 147, DEGREES)
+    drivetrain.drive_for(FORWARD, 400, MM)
+
+    global ai_vision_1_objects, screen_precision, console_precision, upOutputActive
+    upOutputActive = True
+    while True():
+        TopMotors.spin(FORWARD)
+        BackMiddle.spin(FORWARD)
+        FrontLandM.spin(FORWARD)
+        ai_vision_1_objects = ai_vision_1.take_snapshot(ai_vision_1__RedBlock)
+        if len(ai_vision_1_objects) > 0:
+            if ai_vision_1_objects[0].width >= 270:
+                if ai_vision_1_objects[0].centerX >= 150 and ai_vision_1_objects[0].centerX <= 170:
+                    brain.screen.clear_row(1)
+                    brain.screen.set_cursor(brain.screen.row(), 1)
+                    brain.screen.set_cursor(1, 1)
+                    brain.screen.print("Detected Red")
+                    BackLower.spin(FORWARD)
+                    wait(1, SECONDS)
+        else:
+            BackLower.spin(REVERSE)
+            brain.screen.clear_row(1)
+            brain.screen.set_cursor(brain.screen.row(), 1)
+        ai_vision_1_objects = ai_vision_1.take_snapshot(ai_vision_1__BlueBlock)
+        if len(ai_vision_1_objects) > 0:
+            if ai_vision_1_objects[0].width >= 150:
+                if ai_vision_1_objects[0].centerX >= 100 and ai_vision_1_objects[0].centerX <= 200:
+                    brain.screen.clear_row(2)
+                    brain.screen.set_cursor(brain.screen.row(), 1)
+                    brain.screen.set_cursor(2, 1)
+                    brain.screen.print("Detected Blue")
+                    BackLower.spin(FORWARD)
+        else:
+            BackLower.spin(REVERSE)
+            brain.screen.clear_row(2)                
+            brain.screen.set_cursor(brain.screen.row(), 1)
+        wait(5, MSEC)
+    FrontLandM.stop()
     TopMotors.stop()
     BackMiddle.stop()
-    FrontLandM.stop()
     BackLower.stop()
-    TopMotors.spin(FORWARD)
-    BackMiddle.spin(FORWARD)
-    FrontLandM.spin(FORWARD)
-    BackLower.spin(REVERSE)
+    FrontLandM.stop()
+    wait(5, MSEC)
+    upOutputActive = False
+    
 
 def user_control():
     # global myVariable, ai_vision_1_objects, screen_precision, console_precision
@@ -593,6 +628,7 @@ def user_control():
         # wait(20, MSEC)
     brain.screen.clear_screen()
     # place driver control in this while loop
+
 def FrontLMForward():
     if FrontLandM.is_spinning():
         FrontLandM.stop()
