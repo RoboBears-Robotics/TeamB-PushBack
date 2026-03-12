@@ -448,16 +448,16 @@ def intakeFunct():
         FrontLandM.spin(FORWARD)
         BackLower.spin(FORWARD)
 
-        # ---------- RED BLOCK ----------
-        ai_vision_1_objects = ai_vision_1.take_snapshot(ai_vision_1__RedBlock)
-        found_red = False
+        # ---------- BLUE BLOCK ----------
+        ai_vision_1_objects = ai_vision_1.take_snapshot(ai_vision_1__BlueBlock)
+        found_blue = False
 
         if len(ai_vision_1_objects) > 0:
             for obj in ai_vision_1_objects:
                 if obj.width >= 70 and 140 <= obj.centerX <= 175:
                     brain.screen.clear_row(1)
                     brain.screen.set_cursor(1, 1)
-                    brain.screen.print("Detected Red")
+                    brain.screen.print("Detected Blue")
 
                     BackLower.spin(REVERSE)
                     BackMiddle.stop()
@@ -466,20 +466,20 @@ def intakeFunct():
                     found_red = True
                     break
 
-        if not found_red:
+        if not found_blue:
             brain.screen.clear_row(1)
             brain.screen.set_cursor(1, 1)
 
-        # ---------- BLUE BLOCK ----------
-        ai_vision_1_objects = ai_vision_1.take_snapshot(ai_vision_1__BlueBlock)
-        found_blue = False
+        # ---------- RED BLOCK ----------
+        ai_vision_1_objects = ai_vision_1.take_snapshot(ai_vision_1__RedBlock)
+        found_red = False
 
         if len(ai_vision_1_objects) > 0:
             for obj in ai_vision_1_objects:
                 if obj.width >= 70 and 140 <= obj.centerX <= 170:
                     brain.screen.clear_row(2)
                     brain.screen.set_cursor(2, 1)
-                    brain.screen.print("Detected Blue")
+                    brain.screen.print("Detected Red")
 
                     BackLower.spin(FORWARD)
                     BackMiddle.spin(REVERSE)
@@ -488,7 +488,7 @@ def intakeFunct():
                     found_blue = True
                     break
 
-        if not found_blue:
+        if not found_red:
             brain.screen.clear_row(2)
             brain.screen.set_cursor(1, 1)
 
@@ -569,16 +569,16 @@ def autonomous():
     drivetrain.drive_for(FORWARD, 800, MM)
 
     # drivetrain.turn_to_heading(130, DEGREES)
-    drivetrain.turn_for(RIGHT, 130, DEGREES)
+    drivetrain.turn_for(LEFT, 130, DEGREES)
     drivetrain.drive_for(FORWARD, 850, MM)
 
     # drivetrain.turn_to_heading(170, DEGREES)
-    drivetrain.turn_for(LEFT, 147, DEGREES)
+    drivetrain.turn_for(RIGHT, 147, DEGREES)
     drivetrain.drive_for(FORWARD, 400, MM)
 
     global ai_vision_1_objects, screen_precision, console_precision, upOutputActive
     upOutputActive = True
-    while True():
+    while True:
         TopMotors.spin(FORWARD)
         BackMiddle.spin(FORWARD)
         FrontLandM.spin(FORWARD)
