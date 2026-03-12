@@ -6,24 +6,36 @@ import math
 # Brain should be defined by default
 brain=Brain()
 
+# left_motor_c = Motor(Ports.PORT6, GearSetting.RATIO_6_1, True)
+# right_motor_c = Motor(Ports.PORT15, GearSetting.RATIO_6_1, False)
+
 # Robot configuration code
 controller_1 = Controller(PRIMARY)
-left_motor_a = Motor(Ports.PORT8, GearSetting.RATIO_18_1, False)
-left_motor_b = Motor(Ports.PORT18, GearSetting.RATIO_18_1, False)
-left_drive_smart = MotorGroup(left_motor_a, left_motor_b)
-right_motor_a = Motor(Ports.PORT3, GearSetting.RATIO_18_1, True)
-right_motor_b = Motor(Ports.PORT13, GearSetting.RATIO_18_1, True)
-right_drive_smart = MotorGroup(right_motor_a, right_motor_b)
+left_motor_a = Motor(Ports.PORT8, GearSetting.RATIO_6_1, True)
+left_motor_b = Motor(Ports.PORT18, GearSetting.RATIO_6_1, True)
+left_motor_c = Motor(Ports.PORT6, GearSetting.RATIO_6_1, True)
+left_drive_smart = MotorGroup(left_motor_a, left_motor_b, left_motor_c)
+right_motor_a = Motor(Ports.PORT3, GearSetting.RATIO_6_1, False)
+right_motor_b = Motor(Ports.PORT13, GearSetting.RATIO_6_1, False)
+right_motor_c = Motor(Ports.PORT15, GearSetting.RATIO_6_1, False)
+right_drive_smart = MotorGroup(right_motor_a, right_motor_b, right_motor_c)
 drivetrain_inertial = Inertial(Ports.PORT5)
-drivetrain = SmartDrive(left_drive_smart, right_drive_smart, drivetrain_inertial, 219.44, 320, 40, MM, 1)
+drivetrain = SmartDrive(left_drive_smart, right_drive_smart, drivetrain_inertial, 219.44, 320, 40, MM, 0.5)
 FrontLandM = Motor(Ports.PORT11, GearSetting.RATIO_18_1, True)
 TopMotors = Motor(Ports.PORT1, GearSetting.RATIO_18_1, True)
 BackMiddle = Motor(Ports.PORT10, GearSetting.RATIO_18_1, False)
 BackLower = Motor(Ports.PORT20, GearSetting.RATIO_18_1, False)
+# AI Vision Color Descriptions
+ai_vision_1__RedBlock = Colordesc(1, 124, 40, 61, 12, 0.25)
+ai_vision_1__BlueBlock = Colordesc(2, 67, 163, 228, 13, 0.3)
+# AI Vision Code Descriptions
+ai_vision_1 = AiVision(Ports.PORT16, ai_vision_1__RedBlock, ai_vision_1__BlueBlock)
 BumperFront = DigitalOut(brain.three_wire_port.a)
+Hook = DigitalOut(brain.three_wire_port.b)
+
 
 # wait for rotation sensor to fully initialize
-wait(30, MSEC) 
+wait(30, MSEC)
 
 
 # Make random actually random
@@ -139,15 +151,35 @@ rc_auto_loop_thread_controller_1 = Thread(rc_auto_loop_function_controller_1)
 ai_vision_1_objects = []
 screen_precision = 0
 console_precision = 0
-myVariable = 0
 
+drivetrain.set_stopping(BRAKE)
 buttonXActive = False
 buttonBActive = False
 buttonUpActive = False
 buttonLRActive = False
 buttonDownActive = False
+middleOutputActive = False
+intakeFunctActive = False
 
-drivetrain.set_drive_velocity(100, PERCENT)
+drivetrainStopMethod = "brake"
+def toggleStopMethod():
+    global drivetrainStopMethod
+    if drivetrainStopMethod == "brake":
+        drivetrain.set_stopping(HOLD)
+        drivetrainStopMethod = "hold"
+        controller_1.screen.clear_row(3)
+        controller_1.screen.set_cursor(3, 1)
+        controller_1.screen.print("Drivetrain = Hold")
+    elif drivetrainStopMethod == "hold":
+        drivetrain.set_stopping(BRAKE)
+        drivetrainStopMethod = "brake"
+        controller_1.screen.clear_row(3)
+        controller_1.screen.set_cursor(3, 1)
+        controller_1.screen.print("Drivetrain = Brake")
+    else:
+        controller_1.screen.clear_row(3)
+        controller_1.screen.set_cursor(3, 1)
+        controller_1.screen.print("drivetrainStopMethod N/A!")
 
 def buttonBFunct():
     BackMiddle.stop()
@@ -158,6 +190,8 @@ def buttonBFunct():
     buttonUpActive = False
     buttonLRActive = False
     buttonDownActive = False
+    middleOutputActive = False
+    intakeFunctActive = False
     global buttonBActive
     if not buttonBActive:
         FrontLandM.spin(FORWARD)
@@ -178,6 +212,8 @@ def buttonXFunct():
     buttonUpActive = False
     buttonLRActive = False
     buttonDownActive = False
+    middleOutputActive = False
+    intakeFunctActive = False
     global buttonXActive
     if not buttonXActive:
         FrontLandM.spin(FORWARD)
@@ -199,6 +235,8 @@ def buttonUpFunct():
     buttonXActive = False
     buttonLRActive = False
     buttonDownActive = False
+    middleOutputActive = False
+    intakeFunctActive = False
     global buttonUpActive
     if not buttonUpActive:
         FrontLandM.spin(FORWARD)
@@ -222,6 +260,8 @@ def buttonLRFunct():
     buttonXActive = False
     buttonUpActive = False
     buttonDownActive = False
+    middleOutputActive = False
+    intakeFunctActive = False
     global buttonLRActive
     if not buttonLRActive:
         FrontLandM.spin(FORWARD)
@@ -245,6 +285,8 @@ def buttonDownFunct():
     buttonXActive = False
     buttonUpActive = False
     buttonLRActive = False
+    middleOutputActive = False
+    intakeFunctActive = False
     global buttonDownActive
     if not buttonDownActive:
         FrontLandM.spin(REVERSE)
@@ -262,29 +304,225 @@ def stopall():
     TopMotors.stop()
     BackMiddle.stop()
     BackLower.stop()
-    global buttonBActive, buttonXActive, buttonUpActive, buttonLRActive, buttonDownActive
+    global buttonBActive, buttonXActive, buttonUpActive, buttonLRActive, buttonDownActive, middleOutputActive, intakeFunctActive
     buttonBActive = False
     buttonXActive = False
     buttonUpActive = False
     buttonLRActive = False
     buttonDownActive = False
+    middleOutputActive = False
+    intakeFunctActive = False
+
+bumperFrontValue = False
 
 def bumperFunct():
-    if BumperFront.value() == 1:
+    global bumperFrontValue
+    if bumperFrontValue:
         BumperFront.set(False)
+        bumperFrontValue = False
     else:
         BumperFront.set(True)
+        bumperFrontValue = True
 
-controller_1.buttonR2.pressed(bumperFunct)
+hookValue = False
+
+def hookFunct():
+    global hookValue
+    if hookValue:
+        Hook.set(False)
+        hookValue = False
+    else:
+        Hook.set(True)
+        hookValue = True
+
+upOutputActive = False
+
+def upOutputStart():
+    global upOutputActive
+    if not upOutputActive:
+        upOutputThread = Thread(upOutput)
+
+def upOutput():
+    global ai_vision_1_objects, screen_precision, console_precision, upOutputActive
+    upOutputActive = True
+    while controller_1.buttonUp.pressing():
+        TopMotors.spin(FORWARD)
+        BackMiddle.spin(FORWARD)
+        FrontLandM.spin(FORWARD)
+        ai_vision_1_objects = ai_vision_1.take_snapshot(ai_vision_1__RedBlock)
+        if len(ai_vision_1_objects) > 0:
+            if ai_vision_1_objects[0].width >= 270:
+                if ai_vision_1_objects[0].centerX >= 150 and ai_vision_1_objects[0].centerX <= 170:
+                    brain.screen.clear_row(1)
+                    brain.screen.set_cursor(brain.screen.row(), 1)
+                    brain.screen.set_cursor(1, 1)
+                    brain.screen.print("Detected Red")
+                    BackLower.spin(FORWARD)
+                    wait(1, SECONDS)
+        else:
+            BackLower.spin(REVERSE)
+            brain.screen.clear_row(1)
+            brain.screen.set_cursor(brain.screen.row(), 1)
+        ai_vision_1_objects = ai_vision_1.take_snapshot(ai_vision_1__BlueBlock)
+        if len(ai_vision_1_objects) > 0:
+            if ai_vision_1_objects[0].width >= 150:
+                if ai_vision_1_objects[0].centerX >= 100 and ai_vision_1_objects[0].centerX <= 200:
+                    brain.screen.clear_row(2)
+                    brain.screen.set_cursor(brain.screen.row(), 1)
+                    brain.screen.set_cursor(2, 1)
+                    brain.screen.print("Detected Blue")
+                    BackLower.spin(FORWARD)
+        else:
+            BackLower.spin(REVERSE)
+            brain.screen.clear_row(2)                
+            brain.screen.set_cursor(brain.screen.row(), 1)
+        wait(5, MSEC)
+    FrontLandM.stop()
+    TopMotors.stop()
+    BackMiddle.stop()
+    BackLower.stop()
+    FrontLandM.stop()
+    wait(5, MSEC)
+    upOutputActive = False    
+
+middleOutputActive = False
+
+def middleOutputStart():
+    global middleOutputActive
+    if not middleOutputActive:
+        middleOutputThread = Thread(middleOutput)
+
+def middleOutput():
+    global ai_vision_1_objects, screen_precision, console_precision, middleOutputActive
+    middleOutputActive = True
+    while controller_1.buttonLeft.pressing() or controller_1.buttonRight.pressing():
+        FrontLandM.spin(FORWARD)
+        TopMotors.spin(REVERSE)
+        BackMiddle.spin(FORWARD)
+        FrontLandM.spin(FORWARD)
+        ai_vision_1_objects = ai_vision_1.take_snapshot(ai_vision_1__RedBlock)
+        if len(ai_vision_1_objects) > 0:
+            if ai_vision_1_objects[0].width >= 270:
+                if ai_vision_1_objects[0].centerX >= 150 or ai_vision_1_objects[0].centerX <= 170:
+                    brain.screen.clear_row(1)
+                    brain.screen.set_cursor(brain.screen.row(), 1)
+                    brain.screen.set_cursor(1, 1)
+                    brain.screen.print("Detected Red")
+                    BackLower.spin(FORWARD)
+                    wait(1, SECONDS)
+        else:
+            BackLower.spin(REVERSE)
+            brain.screen.clear_row(1)
+            brain.screen.set_cursor(brain.screen.row(), 1)
+        ai_vision_1_objects = ai_vision_1.take_snapshot(ai_vision_1__BlueBlock)
+        if len(ai_vision_1_objects) > 0:
+            if ai_vision_1_objects[0].width >= 150:
+                if ai_vision_1_objects[0].centerX >= 100 or ai_vision_1_objects[0].centerX <= 200:
+                    brain.screen.clear_row(2)
+                    brain.screen.set_cursor(brain.screen.row(), 1)
+                    brain.screen.set_cursor(2, 1)
+                    brain.screen.print("Detected Blue")
+                    BackLower.spin(FORWARD)
+        else:
+            BackLower.spin(REVERSE)
+            brain.screen.clear_row(2)                
+            brain.screen.set_cursor(brain.screen.row(), 1)
+        wait(5, MSEC)
+    FrontLandM.stop()
+    TopMotors.stop()
+    BackMiddle.stop()
+    BackLower.stop()
+    FrontLandM.stop()
+    wait(5, MSEC)
+    middleOutputActive = False
+
+intakeFunctActive = False
+
+def intakeFunct():
+    global ai_vision_1_objects, screen_precision, console_precision, intakeFunctActive
+
+    intakeFunctActive = True
+
+    while intakeFunctActive:
+
+        FrontLandM.spin(FORWARD)
+        BackLower.spin(FORWARD)
+
+        # ---------- RED BLOCK ----------
+        ai_vision_1_objects = ai_vision_1.take_snapshot(ai_vision_1__RedBlock)
+        found_red = False
+
+        if len(ai_vision_1_objects) > 0:
+            for obj in ai_vision_1_objects:
+                if obj.width >= 70 and 140 <= obj.centerX <= 175:
+                    brain.screen.clear_row(1)
+                    brain.screen.set_cursor(1, 1)
+                    brain.screen.print("Detected Red")
+
+                    BackLower.spin(REVERSE)
+                    BackMiddle.stop()
+
+                    wait(0.5, SECONDS)
+                    found_red = True
+                    break
+
+        if not found_red:
+            brain.screen.clear_row(1)
+            brain.screen.set_cursor(1, 1)
+
+        # ---------- BLUE BLOCK ----------
+        ai_vision_1_objects = ai_vision_1.take_snapshot(ai_vision_1__BlueBlock)
+        found_blue = False
+
+        if len(ai_vision_1_objects) > 0:
+            for obj in ai_vision_1_objects:
+                if obj.width >= 70 and 140 <= obj.centerX <= 170:
+                    brain.screen.clear_row(2)
+                    brain.screen.set_cursor(2, 1)
+                    brain.screen.print("Detected Blue")
+
+                    BackLower.spin(FORWARD)
+                    BackMiddle.spin(REVERSE)
+
+                    wait(0.5, SECONDS)
+                    found_blue = True
+                    break
+
+        if not found_blue:
+            brain.screen.clear_row(2)
+            brain.screen.set_cursor(1, 1)
+
+        wait(5, MSEC)
+
+    # ---------- STOP MOTORS ----------
+    FrontLandM.stop()
+    TopMotors.stop()
+    BackMiddle.stop()
+    BackLower.stop()
+    wait(5, MSEC)
+
+
+def buttonAFunct():
+    global intakeFunctActive
+    if not intakeFunctActive:
+        intakeFunctThread = Thread(intakeFunct)
+    else:
+        intakeFunctActive = False
+        brain.screen.clear_row(1)
+        brain.screen.clear_row(2)
+
+controller_1.buttonA.pressed(buttonAFunct)
+controller_1.buttonR2.pressed(hookFunct)
 controller_1.buttonL2.pressed(stopall)
 controller_1.buttonL1.pressed(stopall)
 controller_1.buttonR1.pressed(bumperFunct)
 controller_1.buttonX.pressed(buttonXFunct)
 controller_1.buttonB.pressed(buttonBFunct)
-controller_1.buttonUp.pressed(buttonUpFunct)
-controller_1.buttonLeft.pressed(buttonLRFunct)
-controller_1.buttonRight.pressed(buttonLRFunct)
+controller_1.buttonUp.pressed(upOutputStart)
+controller_1.buttonLeft.pressed(middleOutputStart)
+controller_1.buttonRight.pressed(middleOutputStart)
 controller_1.buttonDown.pressed(buttonDownFunct)
+controller_1.buttonY.pressed(toggleStopMethod)
 
 # def checkBlue():
 #     global myVariable, ai_vision_1_objects, screen_precision, console_precision
@@ -317,9 +555,34 @@ def pre_autonomous():
     wait(1, SECONDS)
 
 def autonomous():
+    global ai_vision_1_objects, screen_precision, console_precision
     brain.screen.clear_screen()
     brain.screen.print("autonomous code")
-    # place automonous code here
+    drivetrain.set_drive_velocity(10, PERCENT)
+    drivetrain.set_stopping(BRAKE)
+
+    # ---------- INITIAL MOVEMENT ----------
+    BackMiddle.spin(REVERSE)
+    FrontLandM.spin(FORWARD)
+    BackLower.spin(FORWARD)
+
+    drivetrain.drive_for(FORWARD, 800, MM)
+
+    # drivetrain.turn_to_heading(130, DEGREES)
+    drivetrain.turn_for(RIGHT, 145, DEGREES)
+    drivetrain.drive_for(FORWARD, 850, MM)
+
+    # drivetrain.turn_to_heading(170, DEGREES)
+    drivetrain.turn_for(LEFT, 150, DEGREES)
+    drivetrain.drive_for(FORWARD, 375, MM)
+    TopMotors.stop()
+    BackMiddle.stop()
+    FrontLandM.stop()
+    BackLower.stop()
+    TopMotors.spin(FORWARD)
+    BackMiddle.spin(FORWARD)
+    FrontLandM.spin(FORWARD)
+    BackLower.spin(REVERSE)
 
 def user_control():
     # global myVariable, ai_vision_1_objects, screen_precision, console_precision
@@ -330,10 +593,6 @@ def user_control():
         # wait(20, MSEC)
     brain.screen.clear_screen()
     # place driver control in this while loop
-    while True:
-        wait(20, MSEC)
-
-
 def FrontLMForward():
     if FrontLandM.is_spinning():
         FrontLandM.stop()
