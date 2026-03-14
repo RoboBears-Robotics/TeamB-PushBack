@@ -574,7 +574,7 @@ def autonomous():
 
     # drivetrain.turn_to_heading(170, DEGREES)
     drivetrain.turn_for(LEFT, 147, DEGREES)
-    drivetrain.drive_for(FORWARD, 400, MM)
+    drivetrain.drive_for(FORWARD, 375, MM)
 
     global ai_vision_1_objects, screen_precision, console_precision, upOutputActive
     upOutputActive = True
